@@ -1,0 +1,27 @@
+{
+    "id": "7048163B",
+    "path": "C:/Repos/Research/WM_Prio_ET/WM_Prio_ET/process_eye_data.R",
+    "project_path": "process_eye_data.R",
+    "type": "r_source",
+    "hash": "4151435287",
+    "contents": "",
+    "dirty": false,
+    "created": 1650986916478.0,
+    "source_on_save": false,
+    "relative_order": 4,
+    "properties": {
+        "tempName": "Untitled1",
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "22,0",
+        "scrollLine": "0"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1651064210,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1651064210661,
+    "read_only": false,
+    "read_only_alternatives": []
+}
