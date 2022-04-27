@@ -4,6 +4,7 @@ library(eyetools)
 # pilot data of 20 trials
 d_raw <- read_csv("Raw_data/ET_csv_5224.csv")
 
+# select the columns we need from the eye data, rename them
 d <- 
   d_raw %>% 
   select(device_time_stamp, 
@@ -16,6 +17,7 @@ d <-
          trial_phase,
          pp_TS)
 
+# process the left and right eye data columns into separate x and y variables
 d <- 
   d %>% 
   mutate(left_gaze = gsub("[()]", "", left_gaze), # remove parentheses from numbers
@@ -36,10 +38,10 @@ d <-
          trial,
          trial_phase)  %>% 
   mutate(x = case_when(validity == 1 ~ x,
-                       validity == 0 ~ NA_real_),
+                       validity == 0 ~ NA_real_), # change NaN to NA values
          y = case_when(validity == 1 ~ y,
                        validity == 0 ~ NA_real_)) %>% 
-  select(-validity)
+  select(-validity) # no longer need validity
 
 saveRDS(d, "data_pilot.RDS")
 
