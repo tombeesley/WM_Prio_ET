@@ -4,6 +4,7 @@
 
 # Importing all of the different modules from libraries 
 from psychopy import core, visual, gui, data, misc, event, monitors, sound, clock
+from psychopy.tools.monitorunittools import pix2deg
 import os
 import numpy as np
 from CIEcolorwheel import CIEwheel, rotate, cart2pol
@@ -326,8 +327,26 @@ prac_done_final = u"Practice done! \nPress SPACE to do it for real. \nRemember, 
 
 finished = u"The session is now over. \nPlease inform the experimenter."
 
-def random_colors(num): 
-    return np.random.randint(0,360,size=num)
+def check_angle_difference(angle1, angle2):
+    return 180 - abs(abs(angle1 - angle2) - 180)
+    
+def random_colors(num):
+    random_angles = [] 
+    unallowable_range = 20
+    for i in range(num):
+        while True:
+            temp_angle = np.random.randint(0,360, size = 1)
+            too_close = False
+            for j in range(len(random_angles)):
+                angle_difference = check_angle_difference(temp_angle, random_angles[j])
+                if angle_difference < unallowable_range:
+                    too_close = True
+                    break
+            if not too_close:
+                random_angles.append(temp_angle)
+                break
+    return np.array(random_angles)
+    
     # [CIEwheel(list[item], Lab, Labradius) for item in range(num)]
 
 def test_color(shape, rotation):
@@ -336,6 +355,8 @@ def test_color(shape, rotation):
     
     CWradius = np.array([0.25, 0.33])  #inner and outer radius of color wheel in 'height' (in pixels used to be 350, 450)
     CWthickness = CWradius*np.pi/180
+
+    monitor_half_height_degrees = pix2deg(mywin.size[1], mywin.monitor) / 2
 
     mouse.setPos(newPos=(0,0))
     mouse.setVisible(True)
@@ -362,20 +383,24 @@ def test_color(shape, rotation):
     clicked = False 
     response = None
     
-    start_time = clock.getTime() # this might be start of this part?
-    TS = start_time
-    t_phase = 9    
+    start_time = clock.getTime() 
+    t_phase = 9   
+    TS = start_time 
     
     while clicked == False:
         mouseXY = mouse.getPos()
         polar = cart2pol(mouseXY[0], mouseXY[1])
-        if (polar[0] > colorFeedbackRadius):
+        if (polar[0] >= CWradius[0] * monitor_half_height_degrees and polar[0] <= CWradius[1] * monitor_half_height_degrees): # check if within colour wheel
             selectedOrientation = orientation[int(polar[1])] #computes orientation of mouse position
             rotatedOrientation = rotate(selectedOrientation, -rotation) #rotates it back (in orientation space)
             backrotatedAngle = orient2angle[rotatedOrientation]         #converts it into (color) angle
             pointedcolor = CIEwheel(backrotatedAngle, Lab, Labradius)
             color_stim.setFillColor(pointedcolor, colorSpace='rgb')  #sets the selected color to the current mouse angle
             color_stim.setLineColor(pointedcolor, colorSpace='rgb')
+        else:
+            color_stim.fillColor = [-0.6, -0.6, -0.6]
+            color_stim.lineColor = [-0.6, -0.6, -0.6]
+
         for x in range(0, 360):
             if mouse.isPressedIn(slices[x]):
                 response_color = CIEwheel(x, Lab, Labradius)
@@ -383,9 +408,8 @@ def test_color(shape, rotation):
                 clicked = True
         mywin.flip()
     
-    # probably this is the end - add TS here?
-    TS = clock.getTime()
     t_phase = 10
+    TS = clock.getTime()
     
     # Clean up!
     color_stim.setAutoDraw(False)
@@ -412,7 +436,8 @@ def instr(text, wait_space = True, wait = None):
 
     win_text.setText(text)
     win_text.draw()
-    TS = mywin.flip() # text on
+    mywin.flip() # text on
+    TS = clock.getTime()
 
 # if wait_space is True
     if wait_space:
@@ -436,30 +461,44 @@ def present_trial(trial, test_stage):
     global TS, t_phase
         
     mouse.setVisible(False)
+    mywin.flip()
     t_phase = 1
+    TS = clock.getTime()
     core.wait(iti) # blank for iti (1000ms)
     
+    win_text.setText("la")
+    win_text.draw()
+    mywin.flip() # la on
     t_phase = 2
-    instr(text = "la", wait_space = False, wait = iti) # la for iti (1000ms)
+    TS = clock.getTime()
+    core.wait(iti)
     
+    win_text.setText("+")
+    win_text.draw()
+    mywin.flip() # la on
     t_phase = 3
-    instr(text = "+", wait_space = False, wait = pause) # fixation cross for pause (500ms)
+    TS = clock.getTime()
+    core.wait(pause)
     
+    mywin.flip()
     t_phase = 4
+    TS = clock.getTime() # THIS REPLACES MYWIN.FLIP() WHICH WAS PREVIOUSLY AFTER CORE.WAIT(ITI). 
+    # YOU ADDED A TS TO THE MYWIN.FLIP(), WAS THIS MEANT TO GRAB THE TIME WHEN ITI STARTS?
     core.wait(iti) # blank for iti (1000ms)
-    TS = mywin.flip() # blank iti ON - should this flip be before ITI??
     
-    
+
     condition_stims = condition_lookup[trial['condition']]
     for drawim in condition_stims:
         drawim.draw()
     
+    mywin.flip() # numbers ON
     t_phase = 5
-    TS = mywin.flip() # numbers ON
+    TS = clock.getTime()
     core.wait(iti) # pri numbers for iti (1000ms)
     
+    mywin.flip() # numbers OFF\
     t_phase = 6
-    TS = mywin.flip() # numbers OFF
+    TS = clock.getTime()
     core.wait(pause) # blank for pause (500ms)
     
     for i in range(n_item):
@@ -475,14 +514,15 @@ def present_trial(trial, test_stage):
         stim.lineColor = rgb_color
         stim.draw()
         
+    mywin.flip() # shapes ON
     t_phase = 7
-    TS = mywin.flip() # shapes ON
+    TS = clock.getTime()
     core.wait(presentation) # show shapes for presentation (2000ms)
     
+    mywin.flip() # shapes OFF
     t_phase = 8
-    TS = mywin.flip() # shapes OFF
+    TS = clock.getTime()
     core.wait(retention) # blank for retention (1000ms)
-    mywin.flip() # not sure what this does as no obvious drawing since last flip which was blank
     
     response = test_color(trial['shapes'][trial['tested_position']], trial['rotation'])
     
@@ -687,7 +727,7 @@ def write_trial_structure(trials):
 trials = get_trials(n_trial)
 prac_trial_pri = get_prac_trials_pri(n_prac_trial_pri)
 
-#write_trial_structure(trials)
+write_trial_structure(trials)
 
 def escape():
     ''' Exits the task when escape is pressed'''
