@@ -75,8 +75,8 @@ def CIEwheel(angle, Lab, LabRadius):
     # Trim between 0 and 1, concatenate
     RGB = [ max([0,min([1,R])]), max([0,min([1,G])]), max([0, min([1,B])]) ]
     rescaledRGB = [2*(x - 0.5) for x in RGB]  # bring into range from -1 to 1
+    rgba = [rescaledRGB[0], rescaledRGB[1], rescaledRGB[2], 1]
     return rescaledRGB
-    
     
 
 #%%
