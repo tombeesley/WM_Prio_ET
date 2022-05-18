@@ -3,6 +3,7 @@
 #===============================================================================
 
 # Importing all of the different modules from libraries 
+import sys
 from psychopy import core, visual, gui, data, misc, event, monitors, sound, clock
 from psychopy.tools.monitorunittools import pix2deg
 import os
@@ -336,6 +337,8 @@ def random_colors(num):
     for i in range(num):
         while True:
             temp_angle = np.random.randint(0,360, size = 1)
+            if isinstance(temp_angle, np.ndarray):
+                temp_angle = temp_angle[0]
             too_close = False
             for j in range(len(random_angles)):
                 angle_difference = check_angle_difference(temp_angle, random_angles[j])
@@ -356,7 +359,7 @@ def test_color(shape, rotation):
     CWradius = np.array([0.25, 0.33])  #inner and outer radius of color wheel in 'height' (in pixels used to be 350, 450)
     CWthickness = CWradius*np.pi/180
 
-    monitor_half_height_degrees = pix2deg(mywin.size[1], mywin.monitor) / 2
+    monitor_half_height_degrees = pix2deg(mywin.size[1], mywin.monitor)
 
     mouse.setPos(newPos=(0,0))
     mouse.setVisible(True)
@@ -415,6 +418,8 @@ def test_color(shape, rotation):
     color_stim.setAutoDraw(False)
     for x in range(0,360):
         slices[x].setAutoDraw(False)
+    
+    escape()
 
     mouse.setVisible(False)
     
