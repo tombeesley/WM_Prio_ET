@@ -58,7 +58,7 @@ n_prac_trial_pri = 5
 iti = 1 # inter-trial interval
 pause = 0.5 # a paused used e.g. before a fixation
 presentation = 2 # presentation time
-retention = 1 # retention interval
+retention = 1.6 # retention interval
 
 # COLOR SETUP
 colorFeedbackRadius = 0.05
@@ -206,31 +206,31 @@ centre = (0,0)
 pos_dict = {0:pos1, 1:pos2, 2:pos3, 3:pos4}
     
 #conditions
-Prioritise1 = [visual.ImageStim(mywin, image = 'Pri4.png', pos = pos1, size = 2.5, units="deg"), 
-              visual.ImageStim(mywin, image = 'Pri1.png', pos = pos2, size = 2.5, units="deg"),
-              visual.ImageStim(mywin, image = 'Pri1.png', pos = pos3, size = 2.5, units="deg"),
-              visual.ImageStim(mywin, image = 'Pri1.png', pos = pos4, size = 2.5, units="deg")]
+Prioritise1 = [visual.ImageStim(mywin, image = 'Images/Pri4.png', pos = pos1, size = 2.5, units="deg"), 
+              visual.ImageStim(mywin, image = 'Images/Pri1.png', pos = pos2, size = 2.5, units="deg"),
+              visual.ImageStim(mywin, image = 'Images/Pri1.png', pos = pos3, size = 2.5, units="deg"),
+              visual.ImageStim(mywin, image = 'Images/Pri1.png', pos = pos4, size = 2.5, units="deg")]
               
 
-Prioritise2 = [visual.ImageStim(mywin, image = 'Pri1.png', pos = pos1, size = 2.5, units="deg"), 
-              visual.ImageStim(mywin, image = 'Pri4.png', pos = pos2, size = 2.5, units="deg"),
-              visual.ImageStim(mywin, image = 'Pri1.png', pos = pos3, size = 2.5, units="deg"),
-              visual.ImageStim(mywin, image = 'Pri1.png', pos = pos4, size = 2.5, units="deg")]
+Prioritise2 = [visual.ImageStim(mywin, image = 'Images/Pri1.png', pos = pos1, size = 2.5, units="deg"), 
+              visual.ImageStim(mywin, image = 'Images/Pri4.png', pos = pos2, size = 2.5, units="deg"),
+              visual.ImageStim(mywin, image = 'Images/Pri1.png', pos = pos3, size = 2.5, units="deg"),
+              visual.ImageStim(mywin, image = 'Images/Pri1.png', pos = pos4, size = 2.5, units="deg")]
               
-Prioritise3 = [visual.ImageStim(mywin, image = 'Pri1.png', pos = pos1, size = 2.5, units="deg"), 
-              visual.ImageStim(mywin, image = 'Pri1.png', pos = pos2, size = 2.5, units="deg"),
-              visual.ImageStim(mywin, image = 'Pri4.png', pos = pos3, size = 2.5, units="deg"),
-              visual.ImageStim(mywin, image = 'Pri1.png', pos = pos4, size = 2.5, units="deg")]
+Prioritise3 = [visual.ImageStim(mywin, image = 'Images/Pri1.png', pos = pos1, size = 2.5, units="deg"), 
+              visual.ImageStim(mywin, image = 'Images/Pri1.png', pos = pos2, size = 2.5, units="deg"),
+              visual.ImageStim(mywin, image = 'Images/Pri4.png', pos = pos3, size = 2.5, units="deg"),
+              visual.ImageStim(mywin, image = 'Images/Pri1.png', pos = pos4, size = 2.5, units="deg")]
               
-Prioritise4 = [visual.ImageStim(mywin, image = 'Pri1.png', pos = pos1, size = 2.5, units="deg"), 
-              visual.ImageStim(mywin, image = 'Pri1.png', pos = pos2, size = 2.5, units="deg"),
-              visual.ImageStim(mywin, image = 'Pri1.png', pos = pos3, size = 2.5, units="deg"),
-              visual.ImageStim(mywin, image = 'Pri4.png', pos = pos4, size = 2.5, units="deg")] 
+Prioritise4 = [visual.ImageStim(mywin, image = 'Images/Pri1.png', pos = pos1, size = 2.5, units="deg"), 
+              visual.ImageStim(mywin, image = 'Images/Pri1.png', pos = pos2, size = 2.5, units="deg"),
+              visual.ImageStim(mywin, image = 'Images/Pri1.png', pos = pos3, size = 2.5, units="deg"),
+              visual.ImageStim(mywin, image = 'Images/Pri4.png', pos = pos4, size = 2.5, units="deg")] 
               
-NoPrioritise = [visual.ImageStim(mywin, image = 'Pri1.png', pos = pos1, size = 2.5, units="deg"), 
-              visual.ImageStim(mywin, image = 'Pri1.png', pos = pos2, size = 2.5, units="deg"),
-              visual.ImageStim(mywin, image = 'Pri1.png', pos = pos3, size = 2.5, units="deg"),
-              visual.ImageStim(mywin, image = 'Pri1.png', pos = pos4, size = 2.5, units="deg")] 
+NoPrioritise = [visual.ImageStim(mywin, image = 'Images/Pri1.png', pos = pos1, size = 2.5, units="deg"), 
+              visual.ImageStim(mywin, image = 'Images/Pri1.png', pos = pos2, size = 2.5, units="deg"),
+              visual.ImageStim(mywin, image = 'Images/Pri1.png', pos = pos3, size = 2.5, units="deg"),
+              visual.ImageStim(mywin, image = 'Images/Pri1.png', pos = pos4, size = 2.5, units="deg")] 
 
 condition_lookup = {
     'Prioritise1': Prioritise1,
@@ -250,16 +250,16 @@ condition_lookup = {
 instr_size = [34, 22]
 
 # instructions 
-instr1 = visual.ImageStim(mywin, image = 'instr1.png', pos = (0,0), size = instr_size)
-instr2 = visual.ImageStim(mywin, image = 'instr2.png', pos = (0,0), size = instr_size)
-instr3 = visual.ImageStim(mywin, image = 'instr3.png', pos = (0,0), size = instr_size)
-instr4 = visual.ImageStim(mywin, image = 'instr4.png', pos = (0,0), size = instr_size)
-instr5 = visual.ImageStim(mywin, image = 'instr5.png', pos = (0,0), size = instr_size)
-instr6 = visual.ImageStim(mywin, image = 'instr6.png', pos = (0,0), size = instr_size)
-instr7 = visual.ImageStim(mywin, image = 'instr7.png', pos = (0,0), size = instr_size)
-instr8 = visual.ImageStim(mywin, image = 'instr8.png', pos = (0,0), size = instr_size)
-instr9 = visual.ImageStim(mywin, image = 'instr9.png', pos = (0,0), size = instr_size)
-instr10 = visual.ImageStim(mywin, image = 'instr10.png', pos = (0,0), size = instr_size)
+instr1 = visual.ImageStim(mywin, image = 'Images/instr1.png', pos = (0,0), size = instr_size)
+instr2 = visual.ImageStim(mywin, image = 'Images/instr2.png', pos = (0,0), size = instr_size)
+instr3 = visual.ImageStim(mywin, image = 'Images/instr3.png', pos = (0,0), size = instr_size)
+instr4 = visual.ImageStim(mywin, image = 'Images/instr4.png', pos = (0,0), size = instr_size)
+instr5 = visual.ImageStim(mywin, image = 'Images/instr5.png', pos = (0,0), size = instr_size)
+instr6 = visual.ImageStim(mywin, image = 'Images/instr6.png', pos = (0,0), size = instr_size)
+instr7 = visual.ImageStim(mywin, image = 'Images/instr7.png', pos = (0,0), size = instr_size)
+instr8 = visual.ImageStim(mywin, image = 'Images/instr8.png', pos = (0,0), size = instr_size)
+instr9 = visual.ImageStim(mywin, image = 'Images/instr9.png', pos = (0,0), size = instr_size)
+instr10 = visual.ImageStim(mywin, image = 'Images/instr10.png', pos = (0,0), size = instr_size)
 
 
 # List of instructions
