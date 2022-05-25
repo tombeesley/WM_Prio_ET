@@ -50,7 +50,7 @@ exp_name = "pri_eyetracking_sim_ss4" # name for the experiment for data file and
 
 # TRIAL NUMBERS #
 
-n_trial = 4 * 5 # Default N test trials (was 44 * 5)
+n_trial = 44 * 5 # Default N test trials (was 44 * 5)
 n_prac_trial_pri = 5
 
 # TIMINGS
@@ -151,7 +151,7 @@ data_file.write(header_row)
 # set up right. However, it's safe to double check
 
 mon_name = "testMonitor" # name in the monitor centre
-mon_width = 30 # in cm
+mon_width = 60 # in cm
 mon_dist = 50 # participant distance from monitor in cm
 mon_res = [1920, 1080] # monitor resolution
 
@@ -161,7 +161,7 @@ n_item = 4
 
 
 # Creating the window
-mywin = visual.Window(size=mon_res, monitor = "testMonitor", fullscr=True, allowGUI=False, color="grey", units = 'deg')
+mywin = visual.Window(size=mon_res, monitor = "testMonitor", fullscr=False, allowGUI=False, color="grey", units = 'deg')
 
 # Default text that will be updated later
 text_h = 1
@@ -749,7 +749,7 @@ writeHeader = True # used to set a header row once
 TS = 0 # variable for PP timestamps 
 t_phase = 0 # variable for trial phase information
 
-ET_filename = "ET_csv_" + str(random.randint(0,10000)) + ".csv"
+ET_filename = "ET_Data/ET_csv_" + str(ppt_no) + ".csv"
 
 # eyetracker function for collecting and writing data to csv
 if runET == True:
@@ -782,10 +782,10 @@ if runET == True:
 
 # Practice trials
 
-#instr_loop(task_instructions_pri)
-#instr(ready_prac)
-#present_trials(prac_trial_pri, "practice_pri")
-#instr(prac_done_part)
+instr_loop(task_instructions_pri)
+instr(ready_prac)
+present_trials(prac_trial_pri, "practice_pri")
+instr(prac_done_part)
 
 # Main trials
 if runET == True: 
