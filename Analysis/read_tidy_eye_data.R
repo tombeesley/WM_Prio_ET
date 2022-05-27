@@ -2,7 +2,7 @@ library(tidyverse)
 library(eyetools)
 
 # pilot data of 20 trials
-d_raw <- read_csv("Raw_data/ET_csv_5224.csv")
+d_raw <- read_csv("Eye_raw_data/ET_csv_999.csv")
 
 # select the columns we need from the eye data, rename them
 d <- 
@@ -27,21 +27,20 @@ d <-
   mutate(across(where(is.character),as.numeric))
 
 
-# left eye is better - take that for now
+# get both eyes
 d <- 
   d %>% 
   mutate(time = round((device_time_stamp - device_time_stamp[1])/1000)) %>% # set first timestamp to 0 and all others corrected afterwards
-  select(time,
-         x = left_x, 
-         y = left_y, 
-         validity = left_validity,
-         trial,
-         trial_phase)  %>% 
-  mutate(x = case_when(validity == 1 ~ x,
-                       validity == 0 ~ NA_real_), # change NaN to NA values
-         y = case_when(validity == 1 ~ y,
-                       validity == 0 ~ NA_real_)) %>% 
-  select(-validity) # no longer need validity
+  select(-device_time_stamp, -system_time_stamp)  %>% 
+  mutate(left_x = case_when(left_validity == 1 ~ left_x,
+                            left_validity == 0 ~ NA_real_), # change NaN to NA values
+         left_y = case_when(left_validity == 1 ~ left_y,
+                            left_validity == 0 ~ NA_real_),
+         right_x = case_when(right_validity == 1 ~ right_x,
+                             right_validity == 0 ~ NA_real_), # change NaN to NA values
+         right_y = case_when(right_validity == 1 ~ right_y,
+                             right_validity == 0 ~ NA_real_)) %>% 
+  select(time, left_x, left_y, right_x, right_y, trial, trial_phase)
 
 saveRDS(d, "data_pilot.RDS")
 
