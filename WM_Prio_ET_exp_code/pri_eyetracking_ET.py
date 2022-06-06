@@ -11,7 +11,7 @@ import numpy as np
 from CIEcolorwheel import CIEwheel, rotate, cart2pol
 import math
 import json
-#import tobii_research as tr
+import tobii_research as tr
 import time
 import random
 import csv
@@ -151,9 +151,9 @@ data_file.write(header_row)
 # set up right. However, it's safe to double check
 
 mon_name = "testMonitor" # name in the monitor centre
-mon_width = 30 # in cm
+mon_width = 60 # in cm
 mon_dist = 50 # participant distance from monitor in cm
-mon_res = [1440, 900] # monitor resolution
+mon_res = [1920, 1080] # monitor resolution
 
 # names of colours to be used as per the file names
 stim_size = 1.5 # size in visual angle
@@ -742,7 +742,7 @@ def escape():
         break
 
 # eye tracking variables
-runET = False # run with the eye-tracker or not?
+runET = True # run with the eye-tracker or not?
 writeHeader = True # used to set a header row once
 
 TS = 0 # variable for PP timestamps 
