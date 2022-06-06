@@ -11,7 +11,7 @@ import numpy as np
 from CIEcolorwheel import CIEwheel, rotate, cart2pol
 import math
 import json
-import tobii_research as tr
+#import tobii_research as tr
 import time
 import random
 import csv
@@ -151,14 +151,13 @@ data_file.write(header_row)
 # set up right. However, it's safe to double check
 
 mon_name = "testMonitor" # name in the monitor centre
-mon_width = 60 # in cm
+mon_width = 30 # in cm
 mon_dist = 50 # participant distance from monitor in cm
-mon_res = [1920, 1080] # monitor resolution
+mon_res = [1440, 900] # monitor resolution
 
 # names of colours to be used as per the file names
 stim_size = 1.5 # size in visual angle
 n_item = 4
-
 
 # Creating the window
 mywin = visual.Window(size=mon_res, monitor = "testMonitor", fullscr=False, allowGUI=False, color="grey", units = 'deg')
@@ -308,7 +307,7 @@ def instr_loop(instr_list):
 
 break_trials = range(0, 299, 50)[1:]
 
-break_text = u"Please take a break. \nPress SPACE to continue."
+break_text = u"Please take a break for a minute. \nPress SPACE to continue."
 
 def have_break():
     instr(break_text)
@@ -322,9 +321,9 @@ def reminder():
 
 ready_prac = u"Press SPACE when you are ready for the practice."
 
-prac_done_part = "These practice trials are now over. Please inform the experimenter."
+prac_done_1 = "These practice trials are now over. Please inform the experimenter."
 
-prac_done_final = u"Practice done! \nPress SPACE to do it for real. \nRemember, if one of the shapes is worth 4 points, try extra hard to remember the colour of that shape. \nIf all of the shapes are worth 1 point, try equally hard to remember the colour of all the shapes."
+prac_done_2 = u"Practice done!\n\nRemember, if one of the shapes is worth 4 points, try extra hard to remember the colour of that shape. \nIf all of the shapes are worth 1 point, try equally hard to remember the colour of all the shapes.\n\nPress SPACE to do it for real."
 
 finished = u"The session is now over. \nPlease inform the experimenter."
 
@@ -743,7 +742,7 @@ def escape():
         break
 
 # eye tracking variables
-runET = True # run with the eye-tracker or not?
+runET = False # run with the eye-tracker or not?
 writeHeader = True # used to set a header row once
 
 TS = 0 # variable for PP timestamps 
@@ -785,7 +784,8 @@ if runET == True:
 instr_loop(task_instructions_pri)
 instr(ready_prac)
 present_trials(prac_trial_pri, "practice_pri")
-instr(prac_done_part)
+instr(prac_done_1)
+instr(prac_done_2)
 
 # Main trials
 if runET == True: 
