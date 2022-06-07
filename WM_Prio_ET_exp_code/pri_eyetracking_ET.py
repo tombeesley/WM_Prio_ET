@@ -159,7 +159,6 @@ mon_res = [1920, 1080] # monitor resolution
 stim_size = 1.5 # size in visual angle
 n_item = 4
 
-
 # Creating the window
 mywin = visual.Window(size=mon_res, monitor = "testMonitor", fullscr=False, allowGUI=False, color="grey", units = 'deg')
 
@@ -308,7 +307,7 @@ def instr_loop(instr_list):
 
 break_trials = range(0, 299, 50)[1:]
 
-break_text = u"Please take a break. \nPress SPACE to continue."
+break_text = u"Please take a break for a minute. \nPress SPACE to continue."
 
 def have_break():
     instr(break_text)
@@ -322,9 +321,9 @@ def reminder():
 
 ready_prac = u"Press SPACE when you are ready for the practice."
 
-prac_done_part = "These practice trials are now over. Please inform the experimenter."
+prac_done_1 = "These practice trials are now over. Please inform the experimenter."
 
-prac_done_final = u"Practice done! \nPress SPACE to do it for real. \nRemember, if one of the shapes is worth 4 points, try extra hard to remember the colour of that shape. \nIf all of the shapes are worth 1 point, try equally hard to remember the colour of all the shapes."
+prac_done_2 = u"Practice done!\n\nRemember, if one of the shapes is worth 4 points, try extra hard to remember the colour of that shape. \nIf all of the shapes are worth 1 point, try equally hard to remember the colour of all the shapes.\n\nPress SPACE to do it for real."
 
 finished = u"The session is now over. \nPlease inform the experimenter."
 
@@ -785,7 +784,8 @@ if runET == True:
 instr_loop(task_instructions_pri)
 instr(ready_prac)
 present_trials(prac_trial_pri, "practice_pri")
-instr(prac_done_part)
+instr(prac_done_1)
+instr(prac_done_2)
 
 # Main trials
 if runET == True: 
