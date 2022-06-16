@@ -7,7 +7,7 @@ theme_set(theme_light())
 #d_raw <- readRDS("data_pilot.RDS")
 load("data_pilot.RData")
 
-d_raw <- combine_eyes(d_spaced_3s,"average")
+d_raw <- combine_eyes(d_spaced_2s,"average")
 
 # change to screen coordinates
 d <- 
@@ -18,7 +18,7 @@ d_s <-
   d %>% 
   filter(trial_phase == 7) %>% 
   select(-trial_phase) %>% 
-  filter(between(trial, 31, 31))
+  filter(between(trial, 34, 34))
 
 # process fixations
 f_disp <- 
@@ -47,18 +47,19 @@ meanDurPlot <-
 nFixplot + meanDurPlot
 
 
-# f_vel <- 
-#   eyetools::VTI_saccade(d_s)
+f_sac <-
+  eyetools::VTI_saccade(d_s)
 
 
-AOIs <- data.frame(x = c(460,460, 1460, 1460),
-                   y = c(1040,40, 1040, 40), 
+AOIs <- data.frame(x = c(540,540, 1380, 1380),
+                   y = c(960,120, 960, 120), 
                    width = c(60,60,60,60),
                    height = c(60,60,60,60))
 
 #plot the fixations and raw data
 spatial_plot(raw_data = d_s, 
              fix_data = f_disp,
+             sac_data = f_sac,
              AOIs = AOIs,
              res = c(0,1920,0,1080), 
              show_fix_order = TRUE)
