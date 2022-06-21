@@ -2,7 +2,10 @@ library(tidyverse)
 library(eyetools)
 
 # pilot data of 20 trials
-d_raw <- read_csv("Eye_raw_data/ET_csv_999.csv")
+#d_raw <- read_csv("Eye_raw_data/ET_csv_999.csv") # close-2sec
+d_raw <- read_csv("Eye_raw_data/ET_csv_777.csv") # spaced-3sec/2sec
+#d_raw <- read_csv("Eye_raw_data/ET_csv_778.csv") # spaced-3sec
+
 
 # select the columns we need from the eye data, rename them
 d <- 
@@ -42,7 +45,18 @@ d <-
                              right_validity == 0 ~ NA_real_)) %>% 
   select(time, left_x, left_y, right_x, right_y, trial, trial_phase)
 
-saveRDS(d, "data_pilot.RDS")
+# split the file
+d_spaced_3s <- 
+  d %>% 
+  filter(time < 2000000)
+
+d_spaced_2s <- 
+  d %>% 
+  filter(time > 2000000)
+
+save(d_spaced_2s, d_spaced_3s, file = "data_pilot.RData")
+
+#saveRDS(d, "data_pilot.RDS")
 
   
 
