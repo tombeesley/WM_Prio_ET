@@ -46,7 +46,7 @@ if not os.path.exists('results'): # if there isn't a results folder in the direc
 # PARAMETERS #
 #==============================================================================
 
-exp_name = "pri_eyetracking_sim_ss4" # name for the experiment for data file and ppt_id
+exp_name = "Pri_ET_Study1" # name for the experiment for data file and ppt_id
 
 # TRIAL NUMBERS #
 
@@ -191,7 +191,7 @@ color_stims = {
 }
 
 # Positions
-d = 3.5 # distance from centre of corners on invisible square stims are presented at
+d = 13 # distance from centre of corners on invisible square stims are presented at
 
 # different positions to be used for presenting stimuli.
 pos1 = (-d,d)
@@ -332,7 +332,7 @@ def check_angle_difference(angle1, angle2):
     
 def random_colors(num):
     random_angles = [] 
-    unallowable_range = 20
+    unallowable_range = 40
     for i in range(num):
         while True:
             temp_angle = np.random.randint(0,360, size = 1)
@@ -748,7 +748,7 @@ writeHeader = True # used to set a header row once
 TS = 0 # variable for PP timestamps 
 t_phase = 0 # variable for trial phase information
 
-ET_filename = "ET_Data/ET_csv_" + str(ppt_no) + ".csv"
+ET_filename = "ET_Data/Pri_ET_Study1_ET_" + file_name + ".csv"
 
 # eyetracker function for collecting and writing data to csv
 if runET == True:
