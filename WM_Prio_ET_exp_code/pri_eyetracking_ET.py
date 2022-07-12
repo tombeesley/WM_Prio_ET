@@ -57,6 +57,7 @@ n_prac_trial_pri = 5
 
 iti = 1 # inter-trial interval
 pause = 0.5 # a paused used e.g. before a fixation
+value_pres = 2
 presentation = 2 # presentation time
 retention = 1.6 # retention interval
 
@@ -498,7 +499,7 @@ def present_trial(trial, test_stage):
     mywin.flip() # numbers ON
     t_phase = 5
     TS = clock.getTime()
-    core.wait(iti) # pri numbers for iti (1000ms)
+    core.wait(value_pres) # pri numbers for value_pres (2000ms)
     
     mywin.flip() # numbers OFF\
     t_phase = 6
