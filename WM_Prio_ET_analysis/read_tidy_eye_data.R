@@ -6,10 +6,11 @@ fnams <- list.files("Eye_raw_data", "Study1_ET", full.names = TRUE) # needed for
 subjs <- list.files("Eye_raw_data", "Study1_ET") # needed for identifying subject numbers
 data <- NULL
 for (subj in 1:length(fnams)) {
+  print(subj)
   pData <- read_csv(fnams[subj], col_types = cols(), col_names = TRUE) # read the data from csv
   pData <- pData %>%
-    mutate(subj = substr(subjs[subj],1,str_length(subjs[subj])-7)) %>%
-    select(subj,everything())
+    mutate(subNum = substr(subjs[subj],30,30)) %>%
+    select(subNum,everything())
   data <- rbind(data, pData) # combine data array with existing data
 }
 
@@ -17,7 +18,7 @@ for (subj in 1:length(fnams)) {
 
 # select the columns we need from the eye data, rename them
 d <- 
-  d_raw %>% 
+  data %>% 
   select(device_time_stamp, 
          system_time_stamp,
          left_gaze = left_gaze_point_on_display_area,
@@ -53,18 +54,8 @@ d <-
                              right_validity == 0 ~ NA_real_)) %>% 
   select(time, left_x, left_y, right_x, right_y, trial, trial_phase)
 
-# split the file
-d_spaced_3s <- 
-  d %>% 
-  filter(time < 2000000)
 
-d_spaced_2s <- 
-  d %>% 
-  filter(time > 2000000)
-
-save(d_spaced_2s, d_spaced_3s, file = "data_pilot.RData")
-
-#saveRDS(d, "data_pilot.RDS")
+saveRDS(d, "data_12_07_22.RDS")
 
   
 

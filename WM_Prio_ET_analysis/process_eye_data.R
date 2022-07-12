@@ -4,10 +4,9 @@ library(patchwork)
 
 theme_set(theme_light())
 
-#d_raw <- readRDS("data_pilot.RDS")
-load("data_pilot.RData")
+d_raw <- readRDS("data_12_07_22.RDS")
 
-d_raw <- combine_eyes(d_spaced_2s,"average")
+d_raw <- combine_eyes(d_raw,"average")
 
 # change to screen coordinates
 d <- 
