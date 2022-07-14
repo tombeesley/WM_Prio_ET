@@ -742,7 +742,7 @@ def escape():
         break
 
 # eye tracking variables
-runET = True # run with the eye-tracker or not?
+runET = False # run with the eye-tracker or not?
 writeHeader = True # used to set a header row once
 
 TS = 0 # variable for PP timestamps 
