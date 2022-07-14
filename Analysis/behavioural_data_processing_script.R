@@ -49,6 +49,24 @@ behavioural_data[behavioural_data$condition == "Prioritise4" & behavioural_data$
 
 behavioural_data[behavioural_data$condition == "NoPrioritise", "prioritised"] <- "equal value"
 
+# Define high value and tested spatial locations
+
+behavioural_data$high_value_SL <- NA
+
+behavioural_data[behavioural_data$condition == "Prioritise1", "high_value_SL"] <- "TL"
+behavioural_data[behavioural_data$condition == "Prioritise2", "high_value_SL"] <- "TR"
+behavioural_data[behavioural_data$condition == "Prioritise3", "high_value_SL"] <- "BL"
+behavioural_data[behavioural_data$condition == "Prioritise4", "high_value_SL"] <- "BR"
+behavioural_data[behavioural_data$condition == "NoPrioritise", "high_value_SL"] <- "None"
+
+behavioural_data$tested_SL <- NA
+
+behavioural_data[behavioural_data$tested_position == "0", "tested_SL"] <- "TL"
+behavioural_data[behavioural_data$tested_position == "1", "tested_SL"] <- "TR"
+behavioural_data[behavioural_data$tested_position == "2", "tested_SL"] <- "BL"
+behavioural_data[behavioural_data$tested_position == "3", "tested_SL"] <- "BR"
+
+
 ###------------------------ ###
 ###    Create dataframes    ###
 ### ------------------------ ###
@@ -122,7 +140,7 @@ behavioural_data_individual_plot <- ggplot(behavioural_data_summary, aes(x = pri
   geom_errorbar(width = 0.2, size = 1, alpha = 0.4, color = "grey20",
                 aes(ymax = mean_recall_error + se, 
                     ymin = mean_recall_error - se)) +
-  xlab("Value") + ylab("Proportion correct") +
+  xlab("Value") + ylab("Recall error") +
   geom_text(aes(label = paste("N =", n)), x = 2, y =4, colour = "black", size = 3) +
   theme(axis.line = element_line(colour = "black"),
         panel.grid.major = element_blank(),
@@ -137,3 +155,4 @@ behavioural_data_individual_plot
 
 ggsave(paste0("Figures/behavioural_data_individual_plot-", format(Sys.Date(), ("%d-%m-%y")), ".png"), height = 4, width = 4, dpi = 800, bg = "white")
 
+write_csv(behavioural_data, "behavioural_data_14_07.csv")
