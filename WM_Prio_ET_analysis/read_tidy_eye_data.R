@@ -9,8 +9,8 @@ for (subj in 1:length(fnams)) {
   print(subj)
   pData <- read_csv(fnams[subj], col_types = cols(), col_names = TRUE) # read the data from csv
   pData <- pData %>%
-    mutate(subNum = substr(subjs[subj],30,30)) %>%
-    select(subNum,everything())
+    mutate(id = substr(subjs[subj],18,32)) %>%
+    select(id,everything())
   data <- rbind(data, pData) # combine data array with existing data
 }
 
@@ -19,7 +19,8 @@ for (subj in 1:length(fnams)) {
 # select the columns we need from the eye data, rename them
 d <- 
   data %>% 
-  select(device_time_stamp, 
+  select(id,
+         device_time_stamp, 
          system_time_stamp,
          left_gaze = left_gaze_point_on_display_area,
          left_validity = left_gaze_point_validity,
@@ -36,14 +37,12 @@ d <-
          right_gaze = gsub("[()]", "", right_gaze)) %>% 
   separate(left_gaze, into = c("left_x", "left_y"), sep = ",") %>% 
   separate(right_gaze, into = c("right_x", "right_y"), sep = ",") %>% 
-  mutate(across(where(is.character),as.numeric))
+  mutate(across(left_x:right_y,as.numeric))
 
 
 # get both eyes
 d <- 
   d %>% 
-  mutate(time = round((device_time_stamp - device_time_stamp[1])/1000)) %>% # set first timestamp to 0 and all others corrected afterwards
-  select(-device_time_stamp, -system_time_stamp)  %>% 
   mutate(left_x = case_when(left_validity == 1 ~ left_x,
                             left_validity == 0 ~ NA_real_), # change NaN to NA values
          left_y = case_when(left_validity == 1 ~ left_y,
@@ -52,8 +51,13 @@ d <-
                              right_validity == 0 ~ NA_real_), # change NaN to NA values
          right_y = case_when(right_validity == 1 ~ right_y,
                              right_validity == 0 ~ NA_real_)) %>% 
-  select(time, left_x, left_y, right_x, right_y, trial, trial_phase)
+  select(id, device_time_stamp, left_x, left_y, right_x, right_y, trial, trial_phase)
 
+d <- 
+  d %>% 
+  group_by(id) %>% 
+  mutate(time = round((device_time_stamp - device_time_stamp[1])/1000)) %>% # set first timestamp to 0 and all others corrected afterwards)
+  select(-device_time_stamp, id, time, everything())
 
 saveRDS(d, "data_12_07_22.RDS")
 
