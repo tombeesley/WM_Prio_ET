@@ -28,10 +28,6 @@ d_s <-
   filter(trial_phase == 7) %>% 
   select(-trial_phase)
 
-d_s <- d_s[1:100000,]
-
-d_s$id <-  1
-
 # process fixations (has issues with s = 2,5,6 - need to fix)
 df <-  NULL
 idVals <- distinct(d_s,id)
