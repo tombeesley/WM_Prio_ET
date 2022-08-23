@@ -1,16 +1,28 @@
 library(tidyverse)
 library(eyetools)
 
+rm(list=ls())
+
+rfs_path <- "//lancs/luna/FST/PS/Users/beesleyt/WM_Prio_ET/Raw Data"
+
 # this bit reads in the files and uses part of the filename to make a new "subj" variable
-fnams <- list.files("Eye_raw_data", "Study1_ET", full.names = TRUE) # needed for reading data
-subjs <- list.files("Eye_raw_data", "Study1_ET") # needed for identifying subject numbers
+fnams <- list.files(rfs_path, "Study1_ET", full.names = TRUE) # needed for reading data
+subjs <- list.files(rfs_path, "Study1_ET") # needed for identifying subject numbers
+
 data <- NULL
+data_missing <- NULL
+
 for (subj in 1:length(fnams)) {
-  print(subj)
+  
+  print(c("reading file:", fnams[subj]))
   pData <- read_csv(fnams[subj], col_types = cols(), col_names = TRUE) # read the data from csv
   pData <- pData %>%
     mutate(id = substr(subjs[subj],18,32)) %>%
     select(id,everything())
+  
+  # get participant number
+  pNum <- pull(pData[1,'id'])
+  print(pNum)
   
   # select columns
   print("select columns")
@@ -51,8 +63,46 @@ for (subj in 1:length(fnams)) {
                                right_validity == 0 ~ NA_real_)) %>% 
     select(id, device_time_stamp, left_x, left_y, right_x, right_y, trial, trial_phase)
   
+  
+  
+  # set first timestamp to 0 and all others corrected afterwards)
+  print("adjust timestamps")
+  print(colnames(pData))
+  pData <- 
+    pData %>% 
+    group_by(id) %>% 
+    mutate(time = round((device_time_stamp - device_time_stamp[1])/1000)) %>% 
+    filter(trial_phase == 7) %>% # filter to relevant part of the trial
+    select(-device_time_stamp, -trial_phase, id, time, everything())
+  
+  # combine eye data to single x/y
+  pData <- combine_eyes(pData, "average")
+  
+  # change to screen coordinates
+  pData <- 
+    pData %>% 
+    mutate(x = x*1920, y = y*1080)
+  
+  # interpolation
+  pData <- interpolate(pData)
+  
+  # calculate prop of data missing for each trial
+  pData_missing <- 
+    pData %>% 
+    group_by(trial) %>% 
+    summarise(prop_na = mean(is.na(x)))
+  
+  # process fixations
+  print("process fixations")
+  p_fix <- fix_dispersion(pData, disp_tol = 75, run_interp = FALSE)
+  
+  # add id column and combine with other data
   print("add to data")
-  data <- rbind(data, pData) # combine data array with existing data
+  p_fix <- p_fix %>% mutate(id = pNum, .before = trial)
+  pData_missing <- pData_missing %>% mutate(id = pNum, .before = trial)
+  
+  data <- rbind(data, p_fix) # combine data array with existing data
+  data_missing <- rbind(data_missing, pData_missing) # combine data_missing array with existing data
 
 }
 
