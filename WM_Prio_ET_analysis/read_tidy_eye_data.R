@@ -12,6 +12,7 @@ if (length(list.files(rfs_path)) == 0) {
   # this bit reads in the files and uses part of the filename to make a new "subj" variable
   fnams <- list.files(rfs_path, "Study1_ET", full.names = TRUE) # needed for reading data
   subjs <- list.files(rfs_path, "Study1_ET") # needed for identifying subject numbers
+
   
   data <- NULL
   data_missing <- NULL
@@ -115,12 +116,7 @@ if (length(list.files(rfs_path)) == 0) {
   
 }
 
-
-
-
-# # run this to remove id 7 and save
-# data <- data %>% filter(id != "Pri_ET_Study1_7")
-# 
-# saveRDS(data, "data_12_07_22.RDS")
+saveRDS(data, "data_22_08_22.RDS")
+=======
 
 
