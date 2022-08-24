@@ -16,7 +16,7 @@ if (length(list.files(rfs_path)) == 0) {
   data <- NULL
   data_missing <- NULL
   
-  for (subj in 1:2){ #length(fnams)) {
+  for (subj in 1:length(fnams)) {
     
     print(c("reading file:", fnams[subj]))
     pData <- read_csv(fnams[subj], col_types = cols(), col_names = TRUE) # read the data from csv
@@ -110,7 +110,7 @@ if (length(list.files(rfs_path)) == 0) {
     
   }
   
-  save(c(data,data_missing), file = "data_12_07_22.RDS")
+  save(data,data_missing, file = "data_12_07_22.RData")
   
   
 }
