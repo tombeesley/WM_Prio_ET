@@ -4,50 +4,17 @@ library(patchwork)
 
 theme_set(theme_light())
 
-d_raw <- readRDS("data_22_08_22.RDS")
+# load in the processed data
+load("proc_data_2022-08-24.RData") # data for period 7 of the trial
 
-# combine eyes separately for each participant
-d <- NULL
-idVals <- distinct(d_raw,id)
-for (s in 1:nrow(idVals)) {
-  print(s)
-  d_temp <- filter(d_raw, id == idVals[s,])
-  d_temp <- combine_eyes(d_temp, "average")
-  d_temp$id <- pull(idVals[s,])
-  d <- rbind(d, d_temp)
-}
+# data with fixations
+df <- 
+  data_fix %>% 
+  filter(trial_period == 7) %>% # select period of the trial
+  select(-trial_period) # remove that variable
 
-# change to screen coordinates
-d <- 
-  d %>% 
-  mutate(x = x*1920, y = y*1080)
-
-# ENCODING PROCESSING
-
-# filter to relevant part of the trial
-d_s <- 
-  d %>% 
-  filter(trial_phase == 7) %>% 
-  select(-trial_phase)
-
-# process fixations (has issues with s = 2,5,6 - need to fix)
-df <-  NULL
-idVals <- distinct(d_s,id)
-for (s in 1:nrow(idVals)){
-  print(s)
-  d_temp <- filter(d_s, id == idVals[s,])
-  d_temp <- fix_dispersion(d_temp, disp_tol = 75)
-  d_temp$id <- idVals[s,]
-  df <- rbind(df, d_temp)
-}
-
-
-
-# compute data in areas of interest
-
-# d_sample <- 
-#   df %>% 
-#   filter(id == 5)
+# this is the proportion of missing data (after interpolation) by trial
+data_missing
 
 AOIs <- data.frame(x = c(660,660, 1260, 1260),
                    y = c(840,240, 840, 240), 
@@ -74,6 +41,8 @@ for (s in 1:nrow(idVals)){
 }
 
 count(d_aoi,id)
+
+# remove P7 for having fewer trials?
 
 d_aoi <- d_aoi %>% mutate(id = as.character(id),
                           across(trial:top_right, as.numeric))
