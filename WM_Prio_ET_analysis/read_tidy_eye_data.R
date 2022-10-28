@@ -63,6 +63,6 @@ data <-
   mutate(time = round((device_time_stamp - device_time_stamp[1])/1000)) %>% # set first timestamp to 0 and all others corrected afterwards)
   select(-device_time_stamp, id, time, everything())
 
-saveRDS(data, "data_22_08_22.RDS")
+saveRDS(data, "data_24_10_22.RDS")
 
 

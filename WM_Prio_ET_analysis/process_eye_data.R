@@ -4,8 +4,6 @@ library(patchwork)
 
 theme_set(theme_light())
 
-d_raw <- readRDS("data_22_08_22.RDS")
-
 # combine eyes separately for each participant
 d <- NULL
 idVals <- distinct(d_raw,id)
@@ -22,6 +20,11 @@ d <-
   d %>% 
   mutate(x = x*1920, y = y*1080)
 
+d_raw_reduced <- d_raw %>% select(id, trial, time, trial_phase)
+
+d <- left_join(d, d_raw_reduced)
+
+
 # ENCODING PROCESSING
 
 # filter to relevant part of the trial
@@ -30,7 +33,7 @@ d_s <-
   filter(trial_phase == 7) %>% 
   select(-trial_phase)
 
-# process fixations (has issues with s = 2,5,6 - need to fix)
+# process fixations 
 df <-  NULL
 idVals <- distinct(d_s,id)
 for (s in 1:nrow(idVals)){
@@ -78,41 +81,16 @@ count(d_aoi,id)
 d_aoi <- d_aoi %>% mutate(id = as.character(id),
                           across(trial:top_right, as.numeric))
 
-d_beh <- read_csv("behavioural_data_22_08.csv")
+# read in behavioural data and merge
+
+d_beh <- read_csv("behavioural_data_24_10.csv")
 
 d_beh <- 
   d_beh %>% mutate(trial = n_trial, .keep = "unused", .after = "id")
 
 d_all <- left_join(d_beh, d_aoi, by = c("id", "trial"))
 
-# analyse eye data on position
-
-# # creates a new column called missing. This is equal to 1 if any of the AoI are missing and 0 if all present
-# 
-# d_selected <- d_all %>% 
-#   select(id,trial, prioritised, high_value_SL, tested_SL, bottom_left:top_right) %>%
-#   mutate(missing = case_when((is.na(bottom_left)) | (is.na(top_left)) | (is.na(bottom_right)) | (is.na(top_right)) ~ 1,
-#          TRUE ~ 0))
-# 
-# # frequency of missing cells per participant
-# 
-# table(d_selected$missing, d_selected$id)
-# 
-# # look at number of trials with no data per participant
-# 
-# missing_data_at_trial_level <- d_selected %>% 
-#   group_by(id) %>%
-#   filter(missing == 1) %>%
-#   summarise(n = n())
-# 
-# missing_data_at_trial_level_stats <- missing_data_at_trial_level %>% 
-#   summarise(mean_missing = mean(n),
-#             sd_missing = sd(n))
-# 
-# cut_off <- missing_data_at_trial_level_stats$mean_missing + (2*missing_data_at_trial_level_stats$sd_missing)
-# cut_off
-
-d_selected <- d_all %>% selec(id, trial, prioritised, high_value_SL, tested_SL, bottom_left:top_right)
+d_selected <- d_all %>% select(id, trial, prioritised, high_value_SL, tested_SL, bottom_left:top_right)
 
 
 # divides by total encoding time. This gives a value equal to the proportion of time participants spend fiating at an AoI / total encoding time
@@ -193,14 +171,7 @@ basic_eye_data_plot
 
 ggsave(paste0("Figures/basic_eye_data_plot-", format(Sys.Date(), ("%d-%m-%y")), ".png"), height = 4, width = 4, dpi = 800, bg = "white")
 
-
-
-## Exploratory analysis of pilot data
-
-
-# how many fixations per trial
-
-# RETENTION PROCESSING
+# RETENTION 
 
 # filter to relevant part of the trial
 d_retention <- 
@@ -244,7 +215,9 @@ count(d_aoi_retention,id)
 d_aoi_retention <- d_aoi_retention %>% mutate(id = as.character(id),
                           across(trial:top_right, as.numeric))
 
-d_beh <- read_csv("behavioural_data_22_08.csv")
+# load in behavioural data
+
+d_beh <- read_csv("behavioural_data_24_10.csv")
 
 d_beh <- 
   d_beh %>% mutate(trial = n_trial, .keep = "unused", .after = "id")
@@ -332,7 +305,7 @@ basic_eye_data_plot_retention
 
 ggsave(paste0("Figures/basic_eye_data_plot-RETENTION-", format(Sys.Date(), ("%d-%m-%y")), ".png"), height = 4, width = 4, dpi = 800, bg = "white")
 
-
+# Tom code
 
 fix_summary <- 
   f_disp %>% 
