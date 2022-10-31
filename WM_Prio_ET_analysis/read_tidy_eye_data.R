@@ -12,10 +12,11 @@ if (length(list.files(rfs_path)) == 0) {
   # this bit reads in the files and uses part of the filename to make a new "subj" variable
   fnams <- list.files(rfs_path, "Study1_ET", full.names = TRUE) # needed for reading data
   subjs <- list.files(rfs_path, "Study1_ET") # needed for identifying subject numbers
-
   
-  data <- NULL
+  
+  data_fix <- NULL
   data_missing <- NULL
+  
   
   for (subj in 1:length(fnams)) {
     
@@ -76,52 +77,57 @@ if (length(list.files(rfs_path)) == 0) {
     pData <- 
       pData %>% 
       group_by(id) %>% 
-      mutate(time = round((device_time_stamp - device_time_stamp[1])/1000)) %>% 
-      filter(trial_phase == 7) %>% # filter to relevant part of the trial
-      select(-device_time_stamp, -trial_phase, id, time, everything())
+      mutate(time = round((device_time_stamp - device_time_stamp[1])/1000))
     
-    # combine eye data to single x/y
-    pData <- combine_eyes(pData, "average")
+    for (p in c(5,7,8)) {
+      
+      print(p)
+      
+      pdata_period <- 
+        pData %>% 
+        filter(trial_phase == p) %>% # filter to relevant part of the trial
+        select(-device_time_stamp, -trial_phase, id, time, everything())
+      
+      
+      # combine eye data to single x/y
+      pdata_period <- combine_eyes(pdata_period, "average")
+      
+      # change to screen coordinates
+      pdata_period <- 
+        pdata_period %>% 
+        mutate(x = x*1920, y = y*1080)
+      
+      # interpolation
+      pdata_period <- interpolate(pdata_period)
+      
+      # calculate prop of data missing for each trial
+      pData_missing <- 
+        pdata_period %>% 
+        group_by(trial) %>% 
+        summarise(prop_na = mean(is.na(x)))
+      
+      # process fixations
+      print("process fixations")
+      p_fix <- fix_dispersion(pdata_period, disp_tol = 75, run_interp = FALSE)
+      
+      # add id and period column and combine with other data
+      print("add to data")
+      p_fix <- p_fix %>% mutate(id = pNum, .before = trial) %>% mutate(trial_period = p)
+      pData_missing <- pData_missing %>% mutate(id = pNum, .before = trial) %>% mutate(trial_period = p)
+      
+      data_fix <- rbind(data_fix, p_fix) # combine data array with existing data
+      data_missing <- rbind(data_missing, pData_missing) # combine data_missing array with existing data
+    }
     
-    # change to screen coordinates
-    pData <- 
-      pData %>% 
-      mutate(x = x*1920, y = y*1080)
     
-    # interpolation
-    pData <- interpolate(pData)
     
-    # calculate prop of data missing for each trial
-    pData_missing <- 
-      pData %>% 
-      group_by(trial) %>% 
-      summarise(prop_na = mean(is.na(x)))
-    
-    # process fixations
-    print("process fixations")
-    p_fix <- fix_dispersion(pData, disp_tol = 75, run_interp = FALSE)
-    
-    # add id column and combine with other data
-    print("add to data")
-    p_fix <- p_fix %>% mutate(id = pNum, .before = trial)
-    pData_missing <- pData_missing %>% mutate(id = pNum, .before = trial)
-    
-    data <- rbind(data, p_fix) # combine data array with existing data
-    data_missing <- rbind(data_missing, pData_missing) # combine data_missing array with existing data
-    
-  }
+  } # data processing steps
   
-  save(data,data_missing, file = "data_12_07_22.RData")
+  save_path <- paste0("proc_data_",Sys.Date(),".RData")
+  save(data_fix,data_missing, file = save_path)
   
   
 }
 
-data <- 
-  data %>% 
-  group_by(id) %>% 
-  mutate(time = round((device_time_stamp - device_time_stamp[1])/1000)) %>% # set first timestamp to 0 and all others corrected afterwards)
-  select(-device_time_stamp, id, time, everything())
-
-saveRDS(data, "data_24_10_22.RDS")
 
 
