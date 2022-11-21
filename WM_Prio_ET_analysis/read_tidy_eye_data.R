@@ -3,6 +3,8 @@ library(eyetools)
 
 rm(list=ls())
 
+saveOne = TRUE
+
 rfs_path <- "//luna.lancs.ac.uk/FST/PS/Users/beesleyt/WM_Prio_ET/Raw Data"
 
 # check that the rfs_path is returning / is connected
@@ -12,7 +14,6 @@ if (length(list.files(rfs_path)) == 0) {
   # this bit reads in the files and uses part of the filename to make a new "subj" variable
   fnams <- list.files(rfs_path, "Study1_ET", full.names = TRUE) # needed for reading data
   subjs <- list.files(rfs_path, "Study1_ET") # needed for identifying subject numbers
-  
   
   data_fix <- NULL
   data_missing <- NULL
@@ -96,7 +97,7 @@ if (length(list.files(rfs_path)) == 0) {
       pdata_period <- 
         pdata_period %>% 
         mutate(x = x*1920, y = y*1080)
-      
+
       # interpolation
       pdata_period <- interpolate(pdata_period)
       
