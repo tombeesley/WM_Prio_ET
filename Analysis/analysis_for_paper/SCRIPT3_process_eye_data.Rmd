@@ -1,0 +1,105 @@
+---
+title: "Experiment 1 - Process eye data"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(eyetools) # uses version 0.9.0
+```
+
+```{r load in data}
+d_raw <- readRDS("ET_data_Exp1.RDS") %>% 
+  filter(!(id == "Pri_ET_Study1_7")) %>% # EXCLUDE PP7 - tech error
+    filter(trial_phase == 6 | trial_phase == 7 | trial_phase == 8) # just process phases 6-7 (numbers to end of retention interval)
+
+d_beh <- read_csv("all_behavioural_data_Exp1.csv") # participant 7 already excluded from this 
+
+names(d_beh)[2] <- "trial"
+```
+
+```{r AOIs}
+AOIs <- data.frame(x = c(597,597, 1324, 1324),
+                        y = c(903,177, 903, 177), 
+                        width_radius = c(300,300,300,300),
+                        height = c(300,300,300,300))
+```
+
+```{r ET data function}
+
+data_fix <- NULL
+data_fix_seq <- NULL
+data_aoi_time <- NULL
+data_missing <- NULL
+
+d_raw <- rename(d_raw, pID = id)
+phaseVals <- unique(d_raw$trial_phase)
+
+for (p in phaseVals) {
+  
+  print(p)
+  
+  data_period <- 
+    d_raw %>% 
+    ungroup() %>% 
+    filter(trial_phase == p) %>% # filter to relevant part of the trial
+    select(-device_time_stamp, -trial_phase)
+  
+  data_period <- combine_eyes(data_period, "average")
+  
+  data_period <- 
+    data_period %>% 
+    mutate(x = as.numeric(x)*1920, y = as.numeric(y)*1080)
+  
+  data_period <- interpolate(data_period)
+  
+  missing_period <- 
+    data_period %>% 
+    group_by(pID, trial) %>% 
+    summarise(prop_na = mean(is.na(x)),
+              total_obs = n(),
+              num_na = sum(is.na(x)))
+  
+  missing_period <- missing_period %>% mutate(trial_period = p)
+  
+  print("run fixation_dispersion")
+  
+  fix_period <- fixation_dispersion(data_period, disp_tol = 75)
+  fix_period <- fix_period %>% mutate(trial_period = p)
+  
+  print("run AOI_seq")
+  
+  fix_seq_period <- AOI_seq(data = fix_period, 
+                            AOIs = AOIs)
+  
+  
+  fix_seq_period <- fix_seq_period %>% mutate(trial_period = p)
+  
+  aoi_time_period <- AOI_time(data = fix_period,
+                              data_type = "fix",
+                              AOIs = AOIs,
+                              AOI_names = c("bottom_left", "top_left", "bottom_right", "top_right"))
+  aoi_time_period <- aoi_time_period %>% mutate(trial_period = p)
+  
+  
+  data_fix <- rbind(data_fix, fix_period) # combine fixation results with existing data
+  data_seq <- rbind(data_fix_seq, fix_seq_period) # combine seq analysis with existing data
+  data_aoi_time <- rbind(data_aoi_time, aoi_time_period)
+  data_missing <- rbind(data_missing, missing_period) # combine data_missing array with existing data
+  
+}
+
+```
+
+```{r save data}
+saveRDS(data_fix, "data_fix_678.RDS")
+saveRDS(data_seq, "data_seq_678.RDS")
+saveRDS(data_aoi_time, "data_aoi_time_678.RDS")
+saveRDS(data_missing, "data_missing_678.RDS") 
+```
+
+
+
+
