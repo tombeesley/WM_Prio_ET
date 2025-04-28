@@ -11,31 +11,39 @@ library(eyetools) # uses version 0.9.0
 ```
 
 ```{r load in data}
-d_raw <- readRDS("ET_data_Exp1.RDS") %>% 
-  filter(!(id == "Pri_ET_Study1_7")) %>% # EXCLUDE PP7 - tech error
-    filter(trial_phase == 6 | trial_phase == 7 | trial_phase == 8) # just process phases 6-7 (numbers to end of retention interval)
 
-d_beh <- read_csv("all_behavioural_data_Exp1.csv") # participant 7 already excluded from this 
+phaseVals <- 6:8
 
-names(d_beh)[2] <- "trial"
+# load raw data and prep
+d_raw <- 
+  readRDS("ET_data_Exp1.RDS") %>% 
+  filter(id != "Pri_ET_Study1_7") %>% # EXCLUDE PP7 - tech error
+  filter(trial_phase %in% phaseVals) %>% # just process phases 6-7 (numbers to end of retention interval)
+  rename(pID = id)
+
+# read behavioural data
+# participant 7 already excluded from this
+d_beh <- 
+  read_csv("all_behavioural_data_Exp1.csv") %>% 
+  rename(trial = n_trial)
+
+
 ```
 
 ```{r AOIs}
-AOIs <- data.frame(x = c(597,597, 1324, 1324),
-                        y = c(903,177, 903, 177), 
-                        width_radius = c(300,300,300,300),
-                        height = c(300,300,300,300))
+
+AOI_prio <- eyetools::create_AOI_df(4)
+
+AOI_prio[1,] <- c(597,903,300,300)
+AOI_prio[2,] <- c(597,177,300,300)
+AOI_prio[3,] <- c(1324,903,300,300)
+AOI_prio[4,] <- c(1324,177,300,300)
+
 ```
 
-```{r ET data function}
-
+```{r fix_analysis}
 data_fix <- NULL
-data_fix_seq <- NULL
-data_aoi_time <- NULL
 data_missing <- NULL
-
-d_raw <- rename(d_raw, pID = id)
-phaseVals <- unique(d_raw$trial_phase)
 
 for (p in phaseVals) {
   
@@ -69,35 +77,56 @@ for (p in phaseVals) {
   fix_period <- fixation_dispersion(data_period, disp_tol = 75)
   fix_period <- fix_period %>% mutate(trial_period = p)
   
+  # combine fixation results with existing data 
+  data_fix <- rbind(data_fix, fix_period) 
+  
+  # combine data_missing array with existing data
+  data_missing <- rbind(data_missing, missing_period) 
+  
+}
+
+saveRDS(data_fix, "data_fix_678.RDS")
+saveRDS(data_missing, "data_missing_678.RDS") 
+```
+
+
+```{r seq_analysis}
+data_fix_seq <- NULL
+data_aoi_time <- NULL
+
+# reading in the fixation data means you can skip the last chunk (which takes a long time)
+data_fix <- readRDS("data_fix_678.RDS")
+
+#phaseVals <- 7
+
+for (p in phaseVals) {
   print("run AOI_seq")
   
+  fix_period <- filter(data_fix, trial_period == p)
+  
   fix_seq_period <- AOI_seq(data = fix_period, 
-                            AOIs = AOIs)
+                            AOIs = AOI_prio,
+                            AOI_names = c("bottom_left", "top_left", "bottom_right", "top_right"))
   
   
   fix_seq_period <- fix_seq_period %>% mutate(trial_period = p)
   
   aoi_time_period <- AOI_time(data = fix_period,
                               data_type = "fix",
-                              AOIs = AOIs,
+                              AOIs = AOI_prio,
                               AOI_names = c("bottom_left", "top_left", "bottom_right", "top_right"))
   aoi_time_period <- aoi_time_period %>% mutate(trial_period = p)
   
+  # combine seq analysis with existing data
+  data_fix_seq <- rbind(data_fix_seq, fix_seq_period) 
   
-  data_fix <- rbind(data_fix, fix_period) # combine fixation results with existing data
-  data_seq <- rbind(data_fix_seq, fix_seq_period) # combine seq analysis with existing data
+  # combine aoi analysis with existing data
   data_aoi_time <- rbind(data_aoi_time, aoi_time_period)
-  data_missing <- rbind(data_missing, missing_period) # combine data_missing array with existing data
   
 }
 
-```
-
-```{r save data}
-saveRDS(data_fix, "data_fix_678.RDS")
-saveRDS(data_seq, "data_seq_678.RDS")
+saveRDS(data_fix_seq, "data_seq_678.RDS")
 saveRDS(data_aoi_time, "data_aoi_time_678.RDS")
-saveRDS(data_missing, "data_missing_678.RDS") 
 ```
 
 
