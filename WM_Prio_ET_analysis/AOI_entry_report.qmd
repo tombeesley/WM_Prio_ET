@@ -1,8 +1,11 @@
 ---
-title: "Exploration of AOI entry_report"
-format: html
+title: "Exploration of the sequence of AOI entries by item value"
+format: pdf
 editor_options: 
   chunk_output_type: console
+execute:
+  echo: false
+  output: false
 ---
 
 ```{r setup}
@@ -11,6 +14,7 @@ library(tidyverse)
 library(afex)
 library(emmeans)
 library(apa)
+library(patchwork)
 
 d <- read_csv("Exp2_AOI_seq_data_for_Tom.csv")
 
@@ -19,9 +23,9 @@ d <-
   mutate(AOI_value = as.factor(AOI_value))
 ```
 
-## what was the average entry position, by value of item?
+## What was the average entry position, by value of item?
 
-This analysis looks at when each item was sampled in the sequence of entries across trials. For each item (values 1 to 4) we restricted data to just the first entry position on a trial (ignoring re-entries), and took the mean entry position for each item value. A value of 1 would indicate participants always accessed that item value first on every trial. This mean value ignores trials in which an entry was not made. We can see from the column showing counts that items of value 3 and 4 are accessed more often than values 1 and 2. Therefore taking the mean value therefore takes into account this overall difference and provides an unconfounded measure of sampling position. 
+This analysis looks at when each item was sampled in the sequence of entries across trials. For each item (values 1 to 4) we restricted data to just the first entry position on a trial (ignoring re-entries), and took the mean entry position for each item value. A value of 1 on this metric would indicate participants always accessed that item value first on every trial. This mean value ignores trials in which an entry was not made. We can see from figure showing counts (right side) that items of value 3 and 4 are accessed more often than values 1 and 2. Therefore taking the mean value takes into account this overall difference in sampling and provides an unconfounded measure of sampling position. 
 
 ```{r}
 first_entry_pos <- 
@@ -34,14 +38,45 @@ byP_entry <-
   group_by(id, AOI_value) %>% 
   summarise(mean_pos = mean(entry_pos),
             entry_count = n())
+```
+
+
+```{r}
+#| output: true
 
 # statistics of mean entry position and counts
-byP_entry %>% 
+stats_entry_pos <- 
+  byP_entry %>% 
   group_by(AOI_value) %>% 
   summarise(grp_mean_pos = mean(mean_pos),
             grp_se_pos = sd(mean_pos)/sqrt(n()),
             grp_mean_count = mean(entry_count),
             grp_se_count = sd(entry_count)/sqrt(n()))
+
+entry_mean_plot <- 
+  stats_entry_pos %>% 
+  ggplot(aes(x = AOI_value, y = grp_mean_pos)) +
+  geom_col(aes(fill = AOI_value), colour = "black", alpha = .3) +
+  geom_errorbar(aes(ymin = grp_mean_pos - grp_se_pos,
+                    ymax = grp_mean_pos + grp_se_pos),
+                width = .2) +
+  theme_classic() +
+  coord_cartesian(ylim = c(1,2.5)) +
+  labs(title = "Mean first entry position")
+
+entry_count_plot <- 
+  stats_entry_pos %>% 
+  ggplot(aes(x = AOI_value, y = grp_mean_count)) +
+  geom_col(aes(fill = AOI_value), colour = "black", alpha = .3) +
+  geom_errorbar(aes(ymin = grp_mean_count - grp_se_count,
+                    ymax = grp_mean_count + grp_se_count),
+                width = .2) +
+  theme_classic() +
+  coord_cartesian(ylim = c(80,160)) +
+  labs(title = "# trials with at least one entry (in 192 trials)")
+
+entry_mean_plot + entry_count_plot
+
 ```
 
 
@@ -51,7 +86,9 @@ entry_position_anova <- aov_car(mean_pos ~ Error(id/AOI_value), data = byP_entry
 emmeans(entry_position_anova, "AOI_value", contr = "pairwise")
 ```
 
-There was a significant effect of item value on AOI entry position: `apa(entry_position_anova, effect = "AOI_value")`. The two lower value items were not sampled differently (t < 1), but almost all other comparisons were significant (p < .05; the exception is value 1 vs value 3, p = .12). Item value 4 is sampled earliest on average, followed by item value 3, and then items 2 and 1. 
+Taking the data on mean position in the sequence (left side), there was a significant effect of item value on AOI entry position: `r apa(entry_position_anova, effect = "AOI_value")`. There was no difference found in the sampling of the two lower value items (t < 1), but almost all other comparisons were significant (p < .05; the exception is value 1 vs value 3, p = .12). 
+
+The figure below shows the proportion of trials on which participants attended to the items (values 4 to 1) as a function of the entry position in the sequence (i.e., first item attended; second item attended, etc). The item of value 4 was attended first on approximately 40% of trials, while item 3 was most likely to be the item attended second. Items valued 1 and 2 are less likely to be attended in the early parts of the sequence of eye movements. 
 
 ```{r}
 prop_entry <- 
@@ -62,6 +99,8 @@ prop_entry <-
 
 
 ```{r}
+#| output: true
+
 prop_entry %>% 
   group_by(AOI_value, entry_n) %>% 
   summarise(mean_prop_entry = mean(entry_prop, na.rm = TRUE),
@@ -72,15 +111,41 @@ prop_entry %>%
                     ymax = mean_prop_entry + se_prop_entry),
                 width = .2) +
   facet_wrap(~desc(AOI_value)) +
-  theme_classic()
+  theme_classic() +
+  scale_x_continuous(breaks = c(1:7))
 
 ```
 
-## how often are there re-entry into AOI
+```{r}
+
+first3entries <- filter(prop_entry, entry_n <= 3)
+
+aov_f3 <- aov_car(entry_prop ~ Error(id/AOI_value*entry_n), data = first3entries)
+
+# entry position 1
+pos1 <- filter(prop_entry, entry_n == 1)
+aov_p1 <- aov_car(entry_prop ~ Error(id/AOI_value), data = pos1)
+emmeans(aov_p1, "AOI_value", contr = "pairwise")
+
+# entry position 2
+pos2 <- filter(prop_entry, entry_n == 2)
+aov_p2 <- aov_car(entry_prop ~ Error(id/AOI_value), data = pos2)
+emmeans(aov_p2, "AOI_value", contr = "pairwise")
+
+# entry position 3
+pos3 <- filter(prop_entry, entry_n == 3)
+aov_p3 <- aov_car(entry_prop ~ Error(id/AOI_value), data = pos3)
+emmeans(aov_p3, "AOI_value", contr = "pairwise")
+
+
+```
+
+To assess these patterns, we took data from the first 3 entries, where all but one participant had valid data for all combinations of variables. Importantly this revealed a significant interaction of item value and entry position `r apa(aov_f3, effect = "AOI_value:entry_n")`. To explore this further we conducted one way ANOVAs on the factor of item value at each entry position, followed by pairwise contrasts of item values. All three ANOVAs were significant. For the first entry position, item value 4 was higher than all other items, with no other differences. For the second entry position, item 3 was attended most often and higher than all of other items. For the third entry, item values 3 and 2 were significantly higher than item 1 (with item 4 vs 1 close to significance, p = .052).
+
+## Rate of re-entry into AOIs
 
 
 ```{r}
-
 # add re-entry column
 d_r <- 
   d %>% 
@@ -100,7 +165,19 @@ d_r <-
 byP_reentry <- 
   d_r %>% 
   group_by(id, AOI_value) %>% 
-  summarise(prop_re = n()/192) 
+  summarise(prop_re = n()/192)
+
+# ANOVA
+reentry_anova <- aov_car(prop_re ~ Error(id/AOI_value), data = byP_reentry)
+
+emmeans(reentry_anova, "AOI_value", contr = "pairwise")
+```
+
+For this final analysis we looked at the likelihood that an item received two separate periods of inspection during a trial. To do this, we assessed the sequence of entries into each AOI, and then excluded consecutive entries. We can see that the proportion of re-entry to an AOI was affected by item value, `r apa(reentry_anova, effect = "AOI_value")`. All four means are significantly different from each other. 
+
+
+```{r}
+#| output: true
 
 byP_reentry %>% 
   group_by(AOI_value) %>% 
@@ -113,9 +190,7 @@ byP_reentry %>%
                 width = .2) +
   theme_classic()
 
-reentry_anova <- aov_car(prop_re ~ Error(id/AOI_value), data = byP_reentry)
 
-emmeans(reentry_anova, "AOI_value", contr = "pairwise")
 
 
 ```
