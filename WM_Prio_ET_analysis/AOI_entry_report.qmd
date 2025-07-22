@@ -1,16 +1,29 @@
+---
+title: "Exploration of AOI entry_report"
+format: html
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup}
 library(eyetools)
 library(tidyverse)
 library(afex)
 library(emmeans)
+library(apa)
 
 d <- read_csv("Exp2_AOI_seq_data_for_Tom.csv")
-
-# what is the mean entry position by value of item?
 
 d <- 
   d %>% 
   mutate(AOI_value = as.factor(AOI_value))
+```
 
+## what was the average entry position, by value of item?
+
+This analysis looks at when each item was sampled in the sequence of entries across trials. For each item (values 1 to 4) we restricted data to just the first entry position on a trial (ignoring re-entries), and took the mean entry position for each item value. A value of 1 would indicate participants always accessed that item value first on every trial. This mean value ignores trials in which an entry was not made. We can see from the column showing counts that items of value 3 and 4 are accessed more often than values 1 and 2. Therefore taking the mean value therefore takes into account this overall difference and provides an unconfounded measure of sampling position. 
+
+```{r}
 first_entry_pos <- 
   d %>% 
   group_by(id, trial, AOI_value) %>% 
@@ -19,15 +32,36 @@ first_entry_pos <-
 byP_entry <- 
   first_entry_pos %>% 
   group_by(id, AOI_value) %>% 
-  summarise(mean_pos = mean(entry_pos))
+  summarise(mean_pos = mean(entry_pos),
+            entry_count = n())
 
-aov_car(mean_pos ~ Error(id/AOI_value), data = byP_entry)
+# statistics of mean entry position and counts
+byP_entry %>% 
+  group_by(AOI_value) %>% 
+  summarise(grp_mean_pos = mean(mean_pos),
+            grp_se_pos = sd(mean_pos)/sqrt(n()),
+            grp_mean_count = mean(entry_count),
+            grp_se_count = sd(entry_count)/sqrt(n()))
+```
 
+
+```{r}
+entry_position_anova <- aov_car(mean_pos ~ Error(id/AOI_value), data = byP_entry)
+
+emmeans(entry_position_anova, "AOI_value", contr = "pairwise")
+```
+
+There was a significant effect of item value on AOI entry position: `apa(entry_position_anova, effect = "AOI_value")`. The two lower value items were not sampled differently (t < 1), but almost all other comparisons were significant (p < .05; the exception is value 1 vs value 3, p = .12). Item value 4 is sampled earliest on average, followed by item value 3, and then items 2 and 1. 
+
+```{r}
 prop_entry <- 
   d %>% 
   group_by(id, AOI_value, entry_n) %>% 
   summarise(entry_prop = n()/192)
+```
 
+
+```{r}
 prop_entry %>% 
   group_by(AOI_value, entry_n) %>% 
   summarise(mean_prop_entry = mean(entry_prop, na.rm = TRUE),
@@ -40,7 +74,12 @@ prop_entry %>%
   facet_wrap(~desc(AOI_value)) +
   theme_classic()
 
-# how often are there re-entry into AOI
+```
+
+## how often are there re-entry into AOI
+
+
+```{r}
 
 # add re-entry column
 d_r <- 
@@ -77,3 +116,7 @@ byP_reentry %>%
 reentry_anova <- aov_car(prop_re ~ Error(id/AOI_value), data = byP_reentry)
 
 emmeans(reentry_anova, "AOI_value", contr = "pairwise")
+
+
+```
+
