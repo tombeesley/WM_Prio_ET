@@ -4,6 +4,9 @@
 
 library(tidyverse)
 library(cowplot)
+library(BayesFactor)
+library(afex)
+library(emmeans)
 
 ###-------------------------------------------- ###
 ###  Read in the data  ###
@@ -75,7 +78,7 @@ behavioural_data[behavioural_data$tested_position == "3", "tested_SL"] <- "BR"
 
 behavioural_data_tidy <- behavioural_data %>%
   group_by(id, prioritised) %>%
-  summarise(m_recall_error = sum(recallError)/ n())
+  summarise(m_recall_error = mean(recallError))
 
 # Rename the variables for the figures
 
@@ -108,7 +111,7 @@ behavioural_data_summary$prioritised <- factor(behavioural_data_summary$prioriti
 basic_behavioural_data_plot <- ggplot(data = behavioural_data_summary,
                            mapping = aes(x = prioritised, y = mean_recall_error,
                                          shape = prioritised, group = prioritised, color = prioritised)) + 
-  geom_point(position = position_dodge(width = 0.5), size = 3)+
+  geom_point(position = position_dodge(width = 0.5), size = 2)+
   geom_errorbar(width = c(0.2), position = position_dodge(width = 0.5), size = 1,
                 aes(ymax = mean_recall_error + se,
                     ymin = mean_recall_error - se)) +
@@ -127,32 +130,43 @@ basic_behavioural_data_plot
 
 ggsave(paste0("Figures/basic_behavioural_data_plot-", format(Sys.Date(), ("%d-%m-%y")), ".png"), height = 4, width = 4, dpi = 800, bg = "white")
 
-# Plot with individual pps data
+write_csv(behavioural_data, "behavioural_data_24_10.csv")
 
-behavioural_data_tidy$prioritised <- factor(behavioural_data_tidy$prioritised, c("High", "Equal", "Low"))
+# Frequentist analysis ----
 
-behavioural_data_individual_plot <- ggplot(behavioural_data_summary, aes(x = prioritised, y = mean_recall_error, group = 1)) +
-  geom_hline(yintercept = 1/6, linetype = "dashed", color = "black", alpha = .5) +
-  geom_point(data = behavioural_data_tidy, 
-             aes(x = prioritised, y = m_recall_error, group = id, color = id),
-             shape = 17, alpha = 0.7, size = 2) +
-  geom_point(size = 2, alpha = .4, color = "grey20") +
-  geom_errorbar(width = 0.2, size = 1, alpha = 0.4, color = "grey20",
-                aes(ymax = mean_recall_error + se, 
-                    ymin = mean_recall_error - se)) +
-  xlab("Value") + ylab("Recall error") +
-  geom_text(aes(label = paste("N =", n)), x = 2, y =4, colour = "black", size = 3) +
-  theme(axis.line = element_line(colour = "black"),
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        panel.border = element_blank(),
-        panel.background = element_blank(),
-        strip.background = element_blank(),
-        legend.position = "none",
-        plot.title = element_text(hjust = 0.5, size = 14))
+main_anova <- aov_4(recallError ~ prioritised + (prioritised|id), data = behavioural_data_tidy)
+main_anova
 
-behavioural_data_individual_plot
+pairwise_prioritised <- emmeans(main_anova, ~prioritised)
+pairwise_prioritised
 
-ggsave(paste0("Figures/behavioural_data_individual_plot-", format(Sys.Date(), ("%d-%m-%y")), ".png"), height = 4, width = 4, dpi = 800, bg = "white")
+pairwise_prioritised_outcomes <- as.data.frame(pairs(pairwise_prioritised)) %>%
+  mutate(p_corrected = p.adjust(p.value, method="holm"))
 
-write_csv(behavioural_data, "behavioural_data_14_07.csv")
+pairwise_prioritised_outcomes
+
+# Bayes Factor analysis ----
+
+set.seed(100) 
+iter = 500000
+behavioural_data_tidy$id <- as.factor(behavioural_data_tidy$id)
+behavioural_data_tidy$prioritised <- as.factor(behavioural_data_tidy$prioritised)
+
+main_anova_bf <- anovaBF(formula = m_recall_error ~ prioritised + id, data = behavioural_data_tidy, whichModels = "all", whichRandom = "id", iterations = iter)
+main_anova_bf
+
+# follow up t-tests
+
+bf_high_low  <- ttestBF(x = behavioural_data_tidy$m_recall_error[behavioural_data_tidy$prioritised == "High"], 
+                        y = behavioural_data_tidy$m_recall_error[behavioural_data_tidy$prioritised == "Low"],
+                        paired=TRUE)
+
+bf_high_equal  <- ttestBF(x = behavioural_data_tidy$m_recall_error[behavioural_data_tidy$prioritised == "High"], 
+                          y = behavioural_data_tidy$m_recall_error[behavioural_data_tidy$prioritised == "Equal"],
+                          paired=TRUE)
+
+bf_low_equal  <- ttestBF(x = behavioural_data_tidy$m_recall_error[behavioural_data_tidy$prioritised == "Equal"], 
+                         y = behavioural_data_tidy$m_recall_error[behavioural_data_tidy$prioritised == "Low"],
+                         paired=TRUE)
+
+

@@ -3,3 +3,11 @@
 .RData
 .Ruserdata
 WM_Prio_ET_analysis/Eye_raw_data/
+WM_Prio_ET_analysis/Figures/
+WM_Prio_ET_analysis/behavioural_data_24_10.csv
+WM_Prio_ET_analysis/.RDataTmp
+Analysis/Behavioural_data/
+Analysis/Figures/
+Analysis/behavioural_data_24_10.csv
+Analysis/.Rproj.user/
+Analysis/.Rapp.history
